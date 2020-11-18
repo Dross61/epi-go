@@ -42,7 +42,7 @@ func main() {
 	daystorecovery = 10
 	R0 = 1.3
 	PeopleContact = 10
-	ProbOfInfection = 100 * R0 / (float32(PeopleContact) * 5)
+	ProbOfInfection = 100 * R0 / (float32(PeopleContact) * float32(daystorecovery))
 
 	// big as variable: days
 	// [day][# not sick][# sick][# immune]
