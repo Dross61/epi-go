@@ -4,7 +4,10 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
+
+	"github.com/wcharczuk/go-chart"
 )
 
 func sum(array []int) int { // used to add up the initial people sick during epidemic seeding
@@ -34,13 +37,13 @@ func main() {
 	var size, seed, days, daystorecovery, PeopleContact int
 	var targetperson int
 	var ProbOfInfection, R0 float32
-	var history [150][3]int // the size of this array needs to at least as
+	var history [200][3]int // the size of this array needs to at least as
 
-	size = 1000
-	seed = 2
-	days = 75
+	size = 10000
+	seed = 5
+	days = 125
 	daystorecovery = 10
-	R0 = 1.3
+	R0 = 4.0
 	PeopleContact = 10
 	ProbOfInfection = 100 * R0 / (float32(PeopleContact) * float32(daystorecovery))
 
@@ -92,4 +95,58 @@ func main() {
 		// print out the day's score
 		fmt.Println(day, ",", history[day][0], ",", history[day][1], ",", history[day][2])
 	}
+	title := "SIR Model Epidemic"
+	x := make([]float64, days)
+	y0 := make([]float64, days)
+	y1 := make([]float64, days)
+	y2 := make([]float64, days)
+	for i := 0; i < days; i++ {
+		x[i] = float64(i)
+		y0[i] = float64(history[i][0])
+		y1[i] = float64(history[i][1])
+		y2[i] = float64(history[i][2])
+	}
+	graph := chart.Chart{
+		Title: title,
+		Background: chart.Style{
+			Padding: chart.Box{
+				Top: 40,
+			},
+		},
+		YAxis: chart.YAxis{
+			Name: "People",
+			ValueFormatter: func(v interface{}) string {
+				if vf, isFloat := v.(float64); isFloat {
+					return fmt.Sprintf("%0.0f", vf)
+				}
+				return ""
+			},
+		},
+		XAxis: chart.XAxis{
+			Name: "Days",
+			ValueFormatter: func(v interface{}) string {
+				if vf, isFloat := v.(float64); isFloat {
+					return fmt.Sprintf("%0.0f", vf)
+				}
+				return ""
+			},
+		},
+		Series: []chart.Series{
+			chart.ContinuousSeries{
+				XValues: x,
+				YValues: y0,
+			},
+			chart.ContinuousSeries{
+				XValues: x,
+				YValues: y1,
+			},
+			chart.ContinuousSeries{
+				XValues: x,
+				YValues: y2,
+			},
+		},
+	}
+	f, _ := os.Create("output.png")
+	defer f.Close()
+	graph.Render(chart.PNG, f)
 }
